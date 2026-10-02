@@ -11,7 +11,18 @@ const products = [
   { id: "p5", name: "Body Wave Lace Wig", type: "Wigs", material: "Human hair · Lace front", price: 155000, badge: "READY TO GLOW", style: "product-art art-wig", short: "An effortless, full-bodied finish." },
   { id: "p6", name: "Soft Curl Clip-ins", type: "Extensions", material: "Synthetic · Clip-in set", price: 18500, badge: "QUICK CHANGE", style: "product-art art-clip", short: "Add texture and fullness in a snap." },
 ];
-const liveMode = Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const validSupabaseUrl = (() => {
+  if (!supabaseUrl || supabaseUrl !== supabaseUrl.trim()) return false;
+  try {
+    const parsed = new URL(supabaseUrl);
+    return ["https:", "http:"].includes(parsed.protocol) && Boolean(parsed.hostname);
+  } catch {
+    return false;
+  }
+})();
+const liveMode = validSupabaseUrl && Boolean(supabaseAnonKey);
 const money = (n) => `₦${n.toLocaleString("en-NG")}`;
 
 export default function Home() {
@@ -84,7 +95,7 @@ export default function Home() {
   };
 
   return <>
-    <div className="demo-bar">PREVIEW SHOP · Sample prices &amp; demo checkout <span>Confirm details before launch</span></div>
+    <div className="demo-bar">PREVIEW SHOP · Sample prices &amp; demo checkout <span>{liveMode ? "Confirm details before launch" : "Production checkout needs a valid Supabase URL and key"}</span></div>
     {checkoutError && view === "shop" && <div className="form-error page-alert" role="alert">{checkoutError}</div>}
     <header className="site-header">
       <button className="wordmark" onClick={() => setView("shop")} aria-label="MFH Hair home"><img src="/images/mfh-hair-mark.jpeg" alt="MFH Hair"/></button>
