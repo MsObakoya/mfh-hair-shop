@@ -1,2 +1,30 @@
-# mfh-hair-shop
-HNG 15 Lesson 2 shop for MFH Hair, with Supabase orders, Google sign-in and Mailgun confirmation email.
+# MFH Hair Shop
+
+An HNG 15 Lesson 2 shop project for ponytails, wigs, and hair extensions. The storefront, responsive catalog, cart, checkout form, Supabase/Google auth code, order tables, and server-side Mailgun sender are now scaffolded.
+
+## Project documents
+
+- [Product requirements](PRD.md) — MVP scope, proposed stack, integration requirements, and delivery phases.
+- [Agent instructions](AGENTS.md) — project context, beginner-friendly working conventions, and security expectations.
+- [Setup checklist](SETUP.md) — the account setup steps only the project owner can complete.
+
+## Current status
+
+The application code is in place, but it is **not production-ready or live yet**. The project owner still needs to create the Supabase, Google Cloud, Mailgun, and hosting accounts and enter their own values. Without Supabase credentials, the site offers a browser-local demo checkout only; those demo orders are not real submissions and do not sync between devices. The catalog prices and product specifications are indicative samples and must be confirmed before accepting orders.
+
+## Stack
+
+Next.js App Router, React, Supabase (Postgres and Auth), Mailgun, and Vercel. See the PRD before changing scope or stack.
+
+## Local start
+
+1. Install Node.js 22 or newer (the `.nvmrc` file specifies 22).
+2. Run `npm install`.
+3. Copy `.env.example` to `.env.local` and add your own Supabase and Mailgun values (see [SETUP.md](SETUP.md)). Leave these values private.
+4. Run `npm run dev` and open `http://localhost:3000`.
+
+## Market-based price notes
+
+The sample price points are informed by current Nigerian online listings: Jumia lists synthetic drawstring ponytails around ₦6,800–₦12,000; Blvck Hair lists a human-hair kinky-straight ponytail from ₦123,500; Pleroma lists a human-hair ponytail at ₦35,000 and a bone-straight wig at ₦155,000. These are comparisons, not MFH Hair supplier quotes or confirmed prices. See [Jumia ponytails](https://www.jumia.com.ng/slp/curly-hair-extension-ponytale), [Blvck Hair ponytails](https://www.blvckhairng.com/collections/ponytails), and [Pleroma](https://www.pleromastores.com/).
+
+Keep `.env.local` private; it is excluded by `.gitignore`. Never put credentials in source code or commit them. For deployment, enter them in the hosting provider’s environment-variable settings.
