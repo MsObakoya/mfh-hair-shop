@@ -10,7 +10,7 @@ An HNG 15 Lesson 2 shop project for ponytails, wigs, and hair extensions. The st
 
 ## Current status
 
-The application code is in place, but it is **not production-ready or live yet**. The project owner still needs to create the Supabase, Google Cloud, Mailgun, and hosting accounts and enter their own values. Without Supabase credentials, the site offers a browser-local demo checkout only; those demo orders are not real submissions and do not sync between devices. The catalog prices and product specifications are indicative samples and must be confirmed before accepting orders.
+The storefront is deployed at [mfh-hair-shop.vercel.app](https://mfh-hair-shop.vercel.app/). Sign-in, checkout, and order history use the configured Supabase account; there is no browser-local order or checkout fallback. If production Supabase settings are missing or invalid, ordering is unavailable rather than recording a pretend order. Product prices and specifications still need the owner's final confirmation before real sales.
 
 ## Stack
 

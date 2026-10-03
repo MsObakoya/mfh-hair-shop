@@ -1,9 +1,9 @@
 # MFH Hair — Product Requirements Document
 
-**Status:** MVP implemented; business and service setup still pending  
+**Status:** MVP deployed; production integration setup completed; end-to-end order verification pending
 **Product:** MFH Hair shop website  
 **Owner:** MFH Hair (business details to confirm)  
-**Last updated:** 2026-10-02
+**Last updated:** 2026-10-03
 
 ## 1. Product idea
 
@@ -142,10 +142,11 @@ The project owner must create/configure the Supabase, Google Cloud, and Mailgun 
 
 ## 13. Initial sample catalog
 
-The current on-page sample catalog is stored in `app/page.jsx`; the Supabase seed data is in `supabase/schema.sql`. Price references checked on 2026-10-02 include synthetic drawstring ponytails around ₦6,800–₦12,000 on [Jumia](https://www.jumia.com.ng/slp/curly-hair-extension-ponytale), a human-hair kinky-straight ponytail from ₦123,500 at [Blvck Hair](https://www.blvckhairng.com/collections/ponytails), and a bone-straight wig at ₦155,000 at [Pleroma](https://www.pleromastores.com/). MFH Hair’s sample values are for a project demo and must be confirmed against its actual supplier, product lengths, material grades, and costs before real sales.
+The initial catalog and Supabase seed data are stored in `app/page.jsx` and `supabase/schema.sql`. Price references checked on 2026-10-02 include synthetic drawstring ponytails around ₦6,800–₦12,000 on [Jumia](https://www.jumia.com.ng/slp/curly-hair-extension-ponytale), a human-hair kinky-straight ponytail from ₦123,500 at [Blvck Hair](https://www.blvckhairng.com/collections/ponytails), and a bone-straight wig at ₦155,000 at [Pleroma](https://www.pleromastores.com/). Confirm actual inventory, materials, lengths, and final prices with MFH Hair before real sales.
 
 ## 14. Implementation status
 
-- Responsive shop page, brand assets, filters, cart, demo checkout, and browser-local demo order history: scaffolded.
-- Supabase schema and RLS, Google OAuth code flow, authenticated server checkout, customer order history route, and Mailgun email endpoint: implemented in code, not configured or exercised with live accounts.
-- Hosting/deployment, verified production domain, live email receipt, and end-to-end production flow: pending owner setup.
+- Responsive shop page, brand assets, filters, and cart: deployed.
+- Checkout saves orders through the authenticated Supabase API only; browser-local pretend orders have been removed.
+- Supabase schema and RLS, Google OAuth code flow, customer order history, and Mailgun email endpoint: implemented and production variables configured; verify with an end-to-end order and received email.
+- Vercel production deployment: https://mfh-hair-shop.vercel.app/.
