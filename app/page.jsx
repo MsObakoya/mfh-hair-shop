@@ -32,6 +32,7 @@ export default function Home() {
   const [notice, setNotice] = useState("");
   const [form, setForm] = useState({ name: "", email: "", phone: "", address: "" });
   const [orders, setOrders] = useState([]);
+  const [ordersLoading, setOrdersLoading] = useState(false);
   const [hydrated, setHydrated] = useState(false);
   const [user, setUser] = useState(null);
   const [checkoutError, setCheckoutError] = useState("");
@@ -55,7 +56,26 @@ export default function Home() {
     return () => subscription.unsubscribe();
   }, []);
   useEffect(() => {
-    if (liveMode && view === "orders" && user) fetch("/api/checkout").then((r) => r.json()).then((data) => setOrders(data.orders || [])).catch(() => setCheckoutError("Could not load orders. Please try again."));
+    if (!liveMode || view !== "orders" || !user) return;
+    const controller = new AbortController();
+    setOrders([]);
+    setOrdersLoading(true);
+    setCheckoutError("");
+    fetch("/api/checkout", { signal: controller.signal })
+      .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || "Could not load orders.");
+        const loadedOrders = Array.isArray(data.orders) ? data.orders : [];
+        setOrders(loadedOrders.map((order) => ({
+          ...order,
+          order_items: Array.isArray(order.order_items) ? order.order_items : order.order_items ? [order.order_items] : [],
+        })));
+      })
+      .catch((error) => {
+        if (error.name !== "AbortError") setCheckoutError(error.message || "Could not load orders. Please try again.");
+      })
+      .finally(() => { if (!controller.signal.aborted) setOrdersLoading(false); });
+    return () => controller.abort();
   }, [view, user]);
   useEffect(() => { if (hydrated) localStorage.setItem("mfh-cart", JSON.stringify(cart)); }, [cart, hydrated]);
 
@@ -73,6 +93,12 @@ export default function Home() {
     const supabase = createSupabaseClient();
     const { error } = await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}` } });
     if (error) setCheckoutError(error.message);
+  };
+  const viewOrders = () => {
+    setOrders([]);
+    setOrdersLoading(Boolean(liveMode && user));
+    setCheckoutError("");
+    setView("orders");
   };
   const placeOrder = async (event) => {
     event.preventDefault();
@@ -93,7 +119,7 @@ export default function Home() {
     <header className="site-header">
       <button className="wordmark" onClick={() => setView("shop")} aria-label="MFH Hair home"><img src="/images/mfh-hair-mark.jpeg" alt="MFH Hair"/></button>
       <nav className="desktop-nav"><a href="#shop">Shop all</a><a href="#story">Our story</a><a href="#care">Hair care</a></nav>
-      <div className="header-actions"><button className="text-action" onClick={() => liveMode && !user ? signIn("/?view=orders") : setView("orders")}>{liveMode && !user ? "Sign in" : "My orders"}</button><button className="bag-button" onClick={() => setView("bag")}>Bag <span>{count}</span></button></div>
+      <div className="header-actions"><button className="text-action" onClick={() => liveMode && !user ? signIn("/?view=orders") : viewOrders()}>{liveMode && !user ? "Sign in" : "My orders"}</button><button className="bag-button" onClick={() => setView("bag")}>Bag <span>{count}</span></button></div>
     </header>
 
     {view === "shop" && <main>
@@ -115,9 +141,28 @@ export default function Home() {
 
     {view === "checkout" && <main className="inner-page"><button className="back-link" onClick={() => setView("bag")}>← Back to bag</button><p className="eyebrow">ALMOST YOURS</p><h1>Checkout</h1>{liveMode && !user && <p className="form-explainer">Sign in with Google to continue securely. Your bag will stay saved.</p>}{!liveMode && <p className="form-error" role="alert">Online checkout is temporarily unavailable. Please try again shortly.</p>}<div className="checkout-layout"><form className="checkout-form" onSubmit={placeOrder}><h2>Delivery details</h2><p className="form-explainer">Tell us where to reach you about this order.</p>{[["name", "Full name", "text"], ["email", "Email address", "email"], ["phone", "Phone number", "tel"], ["address", "Delivery address", "text"]].map(([key, label, type]) => <label key={key}>{label}<input required type={type} value={key === "email" && liveMode && user ? user.email : form[key]} onChange={(e) => setForm({ ...form, [key]: e.target.value })} placeholder={key === "address" ? "Street, area, city" : ""}/></label>)}{checkoutError && <p className="form-error" role="alert">{checkoutError}</p>}<button className="button button-dark full" type="submit" disabled={!liveMode}>{user ? `Place order · ${money(total)}` : "Sign in with Google to order"}</button></form><aside className="order-summary"><h2>In your bag</h2>{cart.map((i) => <div key={i.id}><span>{i.name} × {i.qty}</span><strong>{money(i.price * i.qty)}</strong></div>)}<div className="summary-total"><span>Subtotal</span><strong>{money(total)}</strong></div></aside></div></main>}
 
-    {view === "success" && <main className="inner-page centered"><div className="success-mark">✦</div><p className="eyebrow">THANK YOU, {form.name.split(" ")[0]?.toUpperCase()}</p><h1>Your order is <em>noted.</em></h1><p className="success-copy">Your order <strong>{orders[0]?.id?.slice(0, 8)?.toUpperCase()}</strong> is saved to your account. {emailSent ? "A confirmation email has been sent." : "MFH Hair will follow up about delivery."}</p><button className="button button-dark" onClick={() => setView("orders")}>View my orders</button><button className="underlink button-link" onClick={() => setView("shop")}>Back to the shop ↗</button></main>}
+    {view === "success" && <main className="inner-page centered"><div className="success-mark">✦</div><p className="eyebrow">THANK YOU, {form.name.split(" ")[0]?.toUpperCase()}</p><h1>Your order is <em>noted.</em></h1><p className="success-copy">Your order <strong>{orders[0]?.id?.slice(0, 8)?.toUpperCase()}</strong> is saved to your account. {emailSent ? "A confirmation email has been sent." : "MFH Hair will follow up about delivery."}</p><button className="button button-dark" onClick={viewOrders}>View my orders</button><button className="underlink button-link" onClick={() => setView("shop")}>Back to the shop ↗</button></main>}
 
-    {view === "orders" && <main className="inner-page"><button className="back-link" onClick={() => setView("shop")}>← Back to shop</button><p className="eyebrow">YOUR MFH HISTORY</p><h1>My orders</h1>{!liveMode && <p className="form-error" role="alert">Account access is temporarily unavailable. Please try again shortly.</p>}{checkoutError && <p className="form-error" role="alert">{checkoutError}</p>}{orders.length ? orders.map((o) => <div className="history-order" key={o.id}><div><span className="product-type">{new Date(o.created_at).toLocaleDateString("en-NG")} · {o.id}</span><h3>{o.order_items.map((i) => `${i.product_name} × ${i.quantity}`).join(", ")}</h3><span>{o.customer_name}</span></div><strong>{money(o.total_kobo / 100)}</strong></div>) : <div className="empty-state"><p>You haven’t placed any orders yet.</p><button className="button button-dark" onClick={() => setView("shop")}>Find your first piece</button></div>}{liveMode && user && <button className="text-action signout" onClick={async () => { await createSupabaseClient().auth.signOut(); setUser(null); setView("shop"); }}>Sign out</button>}</main>}
+    {view === "orders" && <main className="inner-page">
+      <button className="back-link" onClick={() => setView("shop")}>← Back to shop</button>
+      <p className="eyebrow">YOUR MFH HISTORY</p>
+      <h1>My orders</h1>
+      {!liveMode && <p className="form-error" role="alert">Account access is temporarily unavailable. Please try again shortly.</p>}
+      {checkoutError && <p className="form-error" role="alert">{checkoutError}</p>}
+      {ordersLoading ? <div className="empty-state"><p>Loading your orders…</p></div> : orders.length ? orders.map((o) => {
+        const items = Array.isArray(o.order_items) ? o.order_items : o.order_items ? [o.order_items] : [];
+        const orderDate = o.created_at ? new Date(o.created_at).toLocaleDateString("en-NG") : "Date unavailable";
+        return <div className="history-order" key={o.id}>
+          <div>
+            <span className="product-type">{orderDate} · {o.id}</span>
+            <h3>{items.length ? items.map((i) => `${i.product_name} × ${i.quantity}`).join(", ") : "Order details unavailable"}</h3>
+            <span>{o.customer_name}</span>
+          </div>
+          <strong>{money(Number(o.total_kobo || 0) / 100)}</strong>
+        </div>;
+      }) : <div className="empty-state"><p>You haven’t placed any orders yet.</p><button className="button button-dark" onClick={() => setView("shop")}>Find your first piece</button></div>}
+      {liveMode && user && <button className="text-action signout" onClick={async () => { await createSupabaseClient().auth.signOut(); setUser(null); setView("shop"); }}>Sign out</button>}
+    </main>}
 
     <footer className="footer"><div className="footer-brand"><img src="/images/mfh-hair-mark.jpeg" alt="MFH Hair"/></div><div><p>YOUR HAIR, YOUR MOMENT.</p><span>MFH Hair · Made for your moment</span></div><span className="footer-copy">© 2026 MFH Hair</span></footer>
     {notice && <div className="toast" role="status">{notice} <span>✓</span></div>}
