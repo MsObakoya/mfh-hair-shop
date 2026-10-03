@@ -57,5 +57,9 @@ export async function GET() {
   if (!user) return NextResponse.json({ error: "Sign in to see your orders." }, { status: 401 });
   const { data, error } = await supabase.from("orders").select("id,created_at,total_kobo,status,customer_name,order_items(product_name,unit_price_kobo,quantity,line_total_kobo)").order("created_at", { ascending: false });
   if (error) return NextResponse.json({ error: "We could not load your orders." }, { status: 500 });
-  return NextResponse.json({ orders: data });
+  const orders = (data || []).map((order) => ({
+    ...order,
+    order_items: Array.isArray(order.order_items) ? order.order_items : order.order_items ? [order.order_items] : [],
+  }));
+  return NextResponse.json({ orders });
 }
