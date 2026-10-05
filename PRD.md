@@ -3,7 +3,7 @@
 **Status:** MVP deployed; production integration setup completed; end-to-end order verification pending
 **Product:** MFH Hair shop website  
 **Owner:** MFH Hair (business details to confirm)  
-**Last updated:** 2026-10-03
+**Last updated:** 2026-10-05
 
 ## 1. Product idea
 
@@ -47,6 +47,7 @@ The project should feel like a real, polished small-business shop while demonstr
 - Product details include name, image, description, category, and price.
 - Categories cover ponytails, wigs, and extensions.
 - Product content and prices are sample content until MFH Hair confirms the real catalog. The proposed samples use competitor price comparisons, not supplier quotes.
+- Current storefront catalog has 12 entries with product listing photos linked to third-party retailer pages for demonstration only. MFH Hair does not own these photos; replace them with owner- or supplier-approved assets before commercial use.
 - Mobile and desktop layouts are usable and visually consistent.
 
 ### Cart and checkout
@@ -150,3 +151,9 @@ The initial catalog and Supabase seed data are stored in `app/page.jsx` and `sup
 - Checkout saves orders through the authenticated Supabase API only; browser-local pretend orders have been removed.
 - Supabase schema and RLS, Google OAuth code flow, customer order history, and Mailgun email endpoint: implemented and production variables configured; verify with an end-to-end order and received email.
 - Vercel production deployment: https://mfh-hair-shop.vercel.app/.
+
+## 15. Lesson 3 mobile follow-up
+
+- The mobile task reuses the same Supabase account/auth backend and the Next.js API endpoints.
+- The current web cart is browser `localStorage`, so it does **not** synchronize between devices. A shared Supabase cart table and authenticated cart API are required before demonstrating web-to-mobile or mobile-to-web cart sync.
+- A React Native + Expo companion app is the proposed mobile client. The production deployment and a physical-device demo still need to be verified.
