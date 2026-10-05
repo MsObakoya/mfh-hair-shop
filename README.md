@@ -10,7 +10,7 @@ An HNG 15 Lesson 2 shop project for ponytails, wigs, and hair extensions. The st
 
 ## Current status
 
-The storefront is deployed at [mfh-hair-shop.vercel.app](https://mfh-hair-shop.vercel.app/). Sign-in, checkout, and order history use the configured Supabase account; there is no browser-local order or checkout fallback. If production Supabase settings are missing or invalid, ordering is unavailable rather than recording a pretend order. Product prices and specifications still need the owner's final confirmation before real sales.
+The storefront is deployed at [mfh-hair-shop.vercel.app](https://mfh-hair-shop.vercel.app/). Sign-in, checkout, and order history use the configured Supabase account; there is no browser-local order or checkout fallback. The shop catalog now has 12 sample products and uses product-listing photos linked from third-party retailers for the demonstration. These images are not owned by MFH Hair; replace them with owner or supplier-approved photos before commercial use. Product prices and specifications also need the owner's final confirmation before real sales.
 
 ## Stack
 
@@ -28,3 +28,7 @@ Next.js App Router, React, Supabase (Postgres and Auth), Mailgun, and Vercel. Se
 The sample price points are informed by current Nigerian online listings: Jumia lists synthetic drawstring ponytails around ₦6,800–₦12,000; Blvck Hair lists a human-hair kinky-straight ponytail from ₦123,500; Pleroma lists a human-hair ponytail at ₦35,000 and a bone-straight wig at ₦155,000. These are comparisons, not MFH Hair supplier quotes or confirmed prices. See [Jumia ponytails](https://www.jumia.com.ng/slp/curly-hair-extension-ponytale), [Blvck Hair ponytails](https://www.blvckhairng.com/collections/ponytails), and [Pleroma](https://www.pleromastores.com/).
 
 Keep `.env.local` private; it is excluded by `.gitignore`. Never put credentials in source code or commit them. For deployment, enter them in the hosting provider’s environment-variable settings.
+
+## Catalog update
+
+After deploying a catalog change, run [`supabase/catalog_update.sql`](supabase/catalog_update.sql) in Supabase Dashboard → SQL Editor. The checkout endpoint calculates prices from Supabase, so new product IDs must be present there before those products can be ordered. The catalog and all prices are still examples pending MFH Hair approval.
