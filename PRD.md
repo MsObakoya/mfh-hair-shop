@@ -1,6 +1,6 @@
 # MFH Hair — Product Requirements Document
 
-**Status:** MVP deployed; production integration setup completed; end-to-end order verification pending
+**Status:** Lesson 2 deployed; Lesson 3 companion app implemented locally; production mobile integration and physical-device verification pending
 **Product:** MFH Hair shop website  
 **Owner:** MFH Hair (business details to confirm)  
 **Last updated:** 2026-10-05
@@ -152,8 +152,11 @@ The initial catalog and Supabase seed data are stored in `app/page.jsx` and `sup
 - Supabase schema and RLS, Google OAuth code flow, customer order history, and Mailgun email endpoint: implemented and production variables configured; verify with an end-to-end order and received email.
 - Vercel production deployment: https://mfh-hair-shop.vercel.app/.
 
-## 15. Lesson 3 mobile follow-up
+## 15. Lesson 3 mobile app
 
-- The mobile task reuses the same Supabase account/auth backend and the Next.js API endpoints.
-- The current web cart is browser `localStorage`, so it does **not** synchronize between devices. A shared Supabase cart table and authenticated cart API are required before demonstrating web-to-mobile or mobile-to-web cart sync.
-- A React Native + Expo companion app is the proposed mobile client. The production deployment and a physical-device demo still need to be verified.
+- An Expo / React Native companion app is implemented under `mobile/` with product browsing, Google sign-in, cart, checkout, and order history.
+- Both clients use the existing production Next.js product, checkout, and order-history API endpoints and the same Supabase user account.
+- The website and app synchronize a user's cart through authenticated `/api/cart` requests. The `carts` table is protected by Supabase RLS. Apply `supabase/cart_sync.sql` to the production database before demonstrating synchronization.
+- The mobile app persists the Supabase session in AsyncStorage. It uses the app deep-link scheme `mfhair://auth/callback`; add that URI to Supabase Auth's allowed redirect URLs.
+- Remaining release work: enter public Supabase values in `mobile/.env.local`, apply the cart migration, exercise Google OAuth on a physical phone, install an EAS preview APK, record the continuous two-way cart demo, and share the APK/repository/video submission links.
+- Follow [`mobile/README.md`](mobile/README.md) for beginner-friendly setup steps. No mobile client may contain a Supabase service-role key or Mailgun credential.

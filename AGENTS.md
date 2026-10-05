@@ -4,6 +4,8 @@
 
 This is a beginner-built HNG 15 Lesson 2 shop project for **MFH Hair**, a ponytail, wig, and hair extension business. The product requirements and phased plan are in [`PRD.md`](PRD.md). Keep the required integration flow real: Google authentication, Supabase persistence, customer-owned order history, and Mailgun confirmation email.
 
+The Lesson 3 Expo app lives in `mobile/`. It must keep using the website's APIs and Supabase account. The authenticated `carts` API and RLS-backed table are shared persistence; never replace cross-device synchronization with UI-only or local-only state.
+
 ## Working style
 
 - Explain decisions and steps in plain language suitable for a beginner. Prefer small, understandable changes over clever abstractions.

@@ -32,9 +32,17 @@ create table if not exists public.order_items (
   line_total_kobo integer not null check (line_total_kobo >= 0)
 );
 
+-- One compact, account-owned cart is shared between the web and Expo clients.
+create table if not exists public.carts (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  items jsonb not null default '[]'::jsonb check (jsonb_typeof(items) = 'array'),
+  updated_at timestamptz not null default now()
+);
+
 alter table public.products enable row level security;
 alter table public.orders enable row level security;
 alter table public.order_items enable row level security;
+alter table public.carts enable row level security;
 
 drop policy if exists "Anyone can view active products" on public.products;
 create policy "Anyone can view active products" on public.products for select using (active = true);
@@ -52,6 +60,13 @@ drop policy if exists "Customers can add items to their orders" on public.order_
 create policy "Customers can add items to their orders" on public.order_items for insert to authenticated with check (
   exists (select 1 from public.orders where orders.id = order_items.order_id and orders.user_id = auth.uid())
 );
+grant select, insert, update on public.carts to authenticated;
+drop policy if exists "Customers can read their own cart" on public.carts;
+create policy "Customers can read their own cart" on public.carts for select to authenticated using (auth.uid() = user_id);
+drop policy if exists "Customers can create their own cart" on public.carts;
+create policy "Customers can create their own cart" on public.carts for insert to authenticated with check (auth.uid() = user_id);
+drop policy if exists "Customers can update their own cart" on public.carts;
+create policy "Customers can update their own cart" on public.carts for update to authenticated using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
 insert into public.products (id,name,description,category,material,price_kobo) values
 ('p1','The Everyday Kinky Pony','Soft-volume drawstring ponytail listing preview. Confirm exact product details with MFH Hair.','Ponytails','Drawstring ponytail · sample listing',1250000),

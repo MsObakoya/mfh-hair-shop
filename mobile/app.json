@@ -1,0 +1,23 @@
+{
+  "expo": {
+    "name": "MFH Hair",
+    "slug": "mfh-hair",
+    "scheme": "mfhair",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.mfh.hair"
+    },
+    "android": {
+      "package": "com.mfh.hair",
+      "adaptiveIcon": {
+        "backgroundColor": "#fbf8f4",
+        "foregroundImage": "./assets/icon.png"
+      }
+    },
+    "plugins": ["expo-web-browser"]
+  }
+}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { createClient as createSupabaseClient } from "../lib/supabase/client";
 import { products, productCategories } from "../lib/products";
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -16,9 +16,23 @@ const validSupabaseUrl = (() => {
 })();
 const liveMode = validSupabaseUrl && Boolean(supabaseAnonKey);
 const money = (n) => `₦${n.toLocaleString("en-NG")}`;
+const cartProducts = (items) => items.flatMap((item) => {
+  const product = products.find((candidate) => candidate.id === item.id);
+  return product && Number.isInteger(item.qty) && item.qty > 0 ? [{ ...product, qty: item.qty }] : [];
+});
+const mergeCarts = (local, remote) => {
+  const merged = new Map();
+  for (const item of [...local, ...remote]) {
+    const previous = merged.get(item.id);
+    merged.set(item.id, { ...item, qty: Math.max(previous?.qty || 0, item.qty) });
+  }
+  return [...merged.values()];
+};
 
 export default function Home() {
   const [cart, setCart] = useState([]);
+  const [cartSyncReady, setCartSyncReady] = useState(false);
+  const [cartSyncEnabled, setCartSyncEnabled] = useState(false);
   const [view, setView] = useState("shop");
   const [filter, setFilter] = useState("All pieces");
   const [notice, setNotice] = useState("");
@@ -74,6 +88,71 @@ export default function Home() {
     return () => controller.abort();
   }, [view, user]);
   useEffect(() => { if (hydrated) localStorage.setItem("mfh-cart", JSON.stringify(cart)); }, [cart, hydrated]);
+
+  const refreshRemoteCart = useCallback(async (merge = false) => {
+    if (!user || !liveMode) return;
+    const supabase = createSupabaseClient();
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.access_token) throw new Error("Your session expired. Sign in again to sync your bag.");
+    const response = await fetch("/api/cart", { headers: { Authorization: `Bearer ${session.access_token}` } });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || "Could not sync your bag.");
+    const remote = cartProducts(data.items || []);
+    setCart((current) => merge ? mergeCarts(current, remote) : remote);
+    return remote;
+  }, [user]);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    if (!user) {
+      setCartSyncReady(true);
+      setCartSyncEnabled(false);
+      return;
+    }
+    let active = true;
+    setCartSyncReady(false);
+    setCartSyncEnabled(false);
+    refreshRemoteCart(true)
+      .then(() => { if (active) { setCartSyncEnabled(true); setCartSyncReady(true); } })
+      .catch((error) => { if (active) { setCheckoutError(error.message); setCartSyncReady(true); } });
+    return () => { active = false; };
+  }, [hydrated, user, refreshRemoteCart]);
+
+  useEffect(() => {
+    if (!user || !cartSyncReady || !cartSyncEnabled) return;
+    const sync = async () => {
+      const { data: { session } } = await createSupabaseClient().auth.getSession();
+      if (!session?.access_token) return;
+      const response = await fetch("/api/cart", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+        body: JSON.stringify({ items: cart.map(({ id, qty }) => ({ id, qty })) }),
+      });
+      if (!response.ok) {
+        const data = await response.json();
+        setCheckoutError(data.error || "Your bag could not sync to other devices.");
+        setCartSyncEnabled(false);
+      }
+    };
+    const timer = setTimeout(sync, 300);
+    return () => clearTimeout(timer);
+  }, [cart, user, cartSyncReady, cartSyncEnabled]);
+
+  useEffect(() => {
+    if (!user || !cartSyncEnabled) return;
+    let active = true;
+    const syncFromOtherDevice = () => refreshRemoteCart(false).catch((error) => { if (active) setCheckoutError(error.message); });
+    const onVisibility = () => { if (document.visibilityState === "visible") syncFromOtherDevice(); };
+    window.addEventListener("focus", syncFromOtherDevice);
+    document.addEventListener("visibilitychange", onVisibility);
+    const timer = setInterval(syncFromOtherDevice, 4000);
+    return () => {
+      active = false;
+      window.removeEventListener("focus", syncFromOtherDevice);
+      document.removeEventListener("visibilitychange", onVisibility);
+      clearInterval(timer);
+    };
+  }, [user, cartSyncEnabled, refreshRemoteCart]);
 
   const shown = useMemo(() => filter === "All pieces" ? products : products.filter((p) => p.type === filter), [filter]);
   const count = cart.reduce((n, i) => n + i.qty, 0);

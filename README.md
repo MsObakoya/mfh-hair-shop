@@ -16,6 +16,10 @@ The storefront is deployed at [mfh-hair-shop.vercel.app](https://mfh-hair-shop.v
 
 Next.js App Router, React, Supabase (Postgres and Auth), Mailgun, and Vercel. See the PRD before changing scope or stack.
 
+## Lesson 3 mobile app
+
+The Expo / React Native companion is in [`mobile/`](mobile/README.md). It reuses the deployed product, checkout, and order-history API routes and the same Supabase Google account. The shared per-user cart API uses the new `carts` table; run [`supabase/cart_sync.sql`](supabase/cart_sync.sql) in the production Supabase SQL Editor before testing cross-device sync. The native app needs its own local `mobile/.env.local` with the Supabase URL and anon/publishable key. See the mobile README for OAuth redirect setup, running on a phone, building an installable APK, and the required demo steps.
+
 ## Local start
 
 1. Install Node.js 22 or newer (the `.nvmrc` file specifies 22).

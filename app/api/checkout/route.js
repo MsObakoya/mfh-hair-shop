@@ -1,13 +1,12 @@
 import { NextResponse } from "next/server";
-import { createClient } from "../../../lib/supabase/server";
+import { createClientForRequest } from "../../../lib/supabase/server";
 
 function htmlEscape(value) {
   return String(value).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 }
 
 export async function POST(request) {
-  const supabase = await createClient();
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  const { supabase, user, error: authError } = await createClientForRequest(request);
   if (authError || !user) return NextResponse.json({ error: "Please sign in with Google to place an order." }, { status: 401 });
   const body = await request.json();
   const { name, phone, address, items } = body;
@@ -51,9 +50,8 @@ export async function POST(request) {
   return NextResponse.json({ order: { id: order.id, created_at: order.created_at, total_kobo: total }, emailSent });
 }
 
-export async function GET() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+export async function GET(request) {
+  const { supabase, user } = await createClientForRequest(request);
   if (!user) return NextResponse.json({ error: "Sign in to see your orders." }, { status: 401 });
   const { data, error } = await supabase.from("orders").select("id,created_at,total_kobo,status,customer_name,order_items(product_name,unit_price_kobo,quantity,line_total_kobo)").order("created_at", { ascending: false });
   if (error) return NextResponse.json({ error: "We could not load your orders." }, { status: 500 });
