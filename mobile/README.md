@@ -12,11 +12,13 @@ This Expo / React Native app is the phone companion to the MFH Hair website. It 
 
 Before a cloud APK build, add `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_ANON_KEY` as EAS project environment variables for the `preview` environment. They are public client values; never upload a service-role key. Expo local runs read them from `.env.local`.
 
+The URL must be your actual Supabase project URL (`https://<project-ref>.supabase.co`), not the `example.supabase.co` fallback. The app now refuses Google sign-in when those values are missing. If the sign-in error displays `example.supabase.co`, correct the EAS `preview` values and rebuild the APK.
+
 ## Start on a phone
 
 For quick local preview, start Expo with `npm start` and open the QR code with Expo Go. OAuth deep-link behavior must be tested with the installed development build (Expo Go uses a different redirect URL).
 
-For an installable app icon, sign in to Expo Application Services and build an Android APK:
+For an installable app icon, sign in to Expo Application Services and build a fresh Android APK after changing EAS values or native sign-in code:
 
 ```sh
 npx eas-cli login

@@ -4,9 +4,16 @@ import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+export const supabaseConfigured = Boolean(
+  supabaseUrl &&
+  supabaseAnonKey &&
+  !supabaseUrl.includes('YOUR_PROJECT') &&
+  !supabaseUrl.includes('example.supabase.co') &&
+  !supabaseAnonKey.includes('YOUR_SUPABASE')
+);
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn('Add EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY to mobile/.env.local.');
+if (!supabaseConfigured) {
+  console.warn('Set the real Supabase URL and anon/publishable key in mobile/.env.local and EAS before building.');
 }
 
 export const supabase = createClient(supabaseUrl || 'https://example.supabase.co', supabaseAnonKey || 'missing-anon-key', {
