@@ -18,6 +18,20 @@
         "foregroundImage": "./assets/icon.png"
       }
     },
-    "plugins": ["expo-web-browser"]
+    "plugins": [
+      "expo-web-browser"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "30449984-f751-473c-8938-8989ab4021ba"
+      }
+    },
+    "owner": "iyanujesu",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/30449984-f751-473c-8938-8989ab4021ba"
+    }
   }
 }
